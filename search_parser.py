@@ -6,7 +6,6 @@ import numpy as np
 from scipy import spatial
 
 glove_file = 'glove.6B.300d.txt'
-DESIRED_LENGTH = 10
 #  ¯\_(ツ)_/¯ ¯\_(ツ)_/¯ ¯\_(ツ)_/¯ ¯\_(ツ)_/¯ ¯\_(ツ)_/¯ ¯\_(ツ)_/¯
 
 
@@ -77,9 +76,10 @@ def find_ten(search_list,dictionary):
 
     :param search_list: The search query passed as a list of words
     :param dictionary: {word : vector}
-    :return:
+    :return: a dictionary of word to the closest de
     '''
-    related_words=[]
+    DESIRED_LENGTH = 10
+    related_words={}
     #decide how many words are in dictionary
     count_in = 0
     for word in search_list:
@@ -92,15 +92,18 @@ def find_ten(search_list,dictionary):
     for word in search_list:
         if word in dictionary:
             if len(related_words)<=DESIRED_LENGTH:
-                related_words.extend(find_related(word, dictionary, decide_num_wanted(count_in, DESIRED_LENGTH)))
+                related_words[word] = find_related(word, dictionary, decide_num_wanted(count_in, DESIRED_LENGTH))
     # find 10 closest if any overflow
-    sorted_words = sorted(related_words, key=operator.itemgetter(1))
-    return(sorted_words[:DESIRED_LENGTH])
+    return(related_words)
 
 
 
 
 #example usage
-#search_string = 'this is test input'
-#dictionary = make_dictionary(glove_file)
-#find_ten(search_string,dictionary)
+search_string = 'this is test input'
+dictionary = make_dictionary(glove_file)
+results = find_ten(search_string.split(),dictionary)
+
+for word in search_string.split():
+    print(word+':'+str(results[word]))
+    
