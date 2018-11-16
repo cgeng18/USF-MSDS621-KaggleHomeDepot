@@ -96,14 +96,28 @@ def find_ten(search_list,dictionary):
     # find 10 closest if any overflow
     return(related_words)
 
+def multiply(wordList,numneighbors):
+    wordlist = []
+    matrix = []
+    with open(glove_file) as f:
+        lines = f.readlines()
+        for word_and_vec in lines:
+            wordvec = np.array([float(x) for x in word_and_vec.split()[1:]])
+            matrix.append(wordvec / np.linalg.norm(wordvec))
+            wordlist.append(word_and_vec.split()[0])
+        matrix = np.array(matrix)
+    dictionary = make_dictionary(glove_file)
+    closest = {}
+    for word in wordList:
+        if word in dictionary:
+            wordVec = dictionary[word]
+            dots = matrix.dot(wordVec.T)
+            knn = []
+            close_index_vec = np.argsort(dots)
 
-
-
-#example usage
-search_string = 'this is test input'
-dictionary = make_dictionary(glove_file)
-results = find_ten(search_string.split(),dictionary)
-
-for word in search_string.split():
-    print(word+':'+str(results[word]))
+            for x in range(numneighbors):
+                close_index = close_index_vec[-2-x]
+                knn.append((wordlist[close_index],matrix[close_index].dot(wordVec)/np.linalg.norm(wordVec)))
+            closest[word] = knn
+    return(closest)
     
