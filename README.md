@@ -56,7 +56,7 @@ As we are predicting a continuous variable with known labels this is a regressio
 
 **Jaccard Desc Index** The cardinality of the intersection devided by the cardinality of the union, where the two sets are the sets of words in the description of in item and the search term
 
-<img src="factor_importance.png" alt="Importance of Factors" width="400"/>
+<img src="/Images/factor_importance.png" alt="Importance of Factors" width="400"/>
 
 We also looked at including numeric characteristics of the lematized terms in the title and description. However all of these variables had very large Variance Inflation Factors(VIFs), making us exclude them from our model. 
 
