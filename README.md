@@ -1,4 +1,4 @@
-Chong Geng, Divya Bhargavi, Robert Sandor, Jian Wang, Alan Perry
+[Chong Geng](https://github.com/cgeng18), [Divya Bhargavi](https://github.com/Divya-usf), Robert Sandor, [Jian Wang](https://github.com/jwang1917), [Alan Perry](https://github.com/ajperry2)
 
 # Home Depot Search Algorithm
 
