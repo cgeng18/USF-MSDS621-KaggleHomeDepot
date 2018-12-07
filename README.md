@@ -1,4 +1,4 @@
-Chong, Divya, Robert, Jian, Alan
+Chong Geng, Divya Bhargavi, Robert Sandor, Jian Wang, Alan Perry
 
 # Home Depot Search Algorithm
 
@@ -30,7 +30,7 @@ Chong, Divya, Robert, Jian, Alan
 
 Since we are predicting a continuous variable with known labels, this is a regression problem. However, our data has no numeric columns (save for the labels themselves); to produce these numeric predictions, we had to construct useful numeric features from these textual characteristics that were given to us.
 
-**The Numeric features in our model**
+**Some of the Numeric features in our model**
 
 **Clean Length:** The number of words in the search term after punctuation and numbers are stripped and stop words are removed
 
@@ -57,6 +57,14 @@ Since we are predicting a continuous variable with known labels, this is a regre
 **Jaccard Title Index** The cardinality of the intersection divided by the cardinality of the union, where the two sets are the sets of words in the title of in item and the search term
 
 **Jaccard Desc Index** The cardinality of the intersection divided by the cardinality of the union, where the two sets are the sets of words in the description of in item and the search term
+
+**LCS (Longest Common Subsequence) Title** The count of the longest common sequence of characters that are in the same relative order but are not necessarily contiguous (ex. LCS of 'nice' and 'niece' is 4) between the title and the search term
+
+**LCS (Longest Common Subsequence) Desc** The count of the longest common sequence of characters that are in the same relative order but are not necessarily contiguous (ex. LCS of 'nice' and 'niece' is 4) between the product description and the search term
+
+**NCD (Normalized Compression Distance) Query Title** A measure of similarity in which the search terms and the product title are compressed and compared bit by bit then normalized
+
+**Search Title SW (Smith-Waterman)** A similarity metric (usually used to measure similarity between protein sequences) that compares segments of all possible lengths and optimizes the similarity measure between the search terms and the title
 
 <img src="/Images/factor_importance.png" alt="Importance of Factors" width="400"/>
 
