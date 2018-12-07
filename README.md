@@ -4,7 +4,7 @@
 
 ## More saving. More doing.
 
-### In 2015 Home Depot hosted a Kaggle competition to model how relevent items are to a given search term. 
+### In 2015 Home Depot hosted [a Kaggle competition](https://www.kaggle.com/c/home-depot-product-search-relevance/) to model how relevent items are to a given search term. 
 
 ### Our task is to take search queries, averaging three words in length, and predict which items are the most relevant using a relevancy score from 1.0 to 3.0 (with 3.0 indicating a higher relevancy to the search terms). We measured our model success in the same fashion as the competition with RMSE (Root Mean Squared Error). 
 
