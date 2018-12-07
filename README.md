@@ -4,7 +4,9 @@ Chong, Divya, Robert, Jian, Alan
 
 ## More saving. More doing.
 
-### In 2005 Home Depot hosted a Kaggle competition to model how relevent items are to a given search term. 
+### In 2015 Home Depot hosted a Kaggle competition to model how relevent items are to a given search term. 
+
+### Our task is to take search queries, averaging three words in length, and predict which items are the most relevant
 
 <img src="./Images/logo.jpg" alt="Home Depot Logo" width="200"/>
 
