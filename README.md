@@ -105,7 +105,7 @@ Here are some pictures of the trees models top ten performance with different hy
 
 ### GBR
 
-<img src=".Images/GBR_max_depth_error.png" alt="Importance of Factors" width="400"/>
+<img src="./Images/GBR_max_depth_error.png" alt="Importance of Factors" width="400"/>
 
 ### Regular Random Forrest
 
