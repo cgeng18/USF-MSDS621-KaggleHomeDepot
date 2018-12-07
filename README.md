@@ -12,17 +12,17 @@ Chong, Divya, Robert, Jian, Alan
 
 **SearchTerm:** Examples of queries which customers made of the search engine on homedepot.com
 
-**Product Uid:**A unique numeric value assigned to each item
+**Product Uid:** A unique numeric value assigned to each item
 
-**Product Title:**The title of an item that is displayed on the website
+**Product Title:** The title of an item that is displayed on the website
 
-**Name:**Name of an Item's attribute
+**Name:** Name of an Item's attribute
 
-**Value:**The value of an Item's attribute
+**Value:** The value of an Item's attribute
 
-**Product Description:**A sentence or two which describes an item in the inventory
+**Product Description:** A sentence or two which describes an item in the inventory
 
-**Relevance:**A score assigned that describes how relevant an item is to a given search term. This number was assigned by a domain expert.
+**Relevance:** A score assigned that describes how relevant an item is to a given search term. This number was assigned by a domain expert.
 
 <img src="/Images/relevance.png" alt="Home Depot Logo" width="200"/>
 
@@ -32,21 +32,21 @@ As we are predicting a continuous variable with known labels this is a regressio
 
 **Clean Length:** The number of words in the search term after it is cleaned of impurities
 
-**Title Length:**The number of words in an items title
+**Title Length:** The number of words in an items title
 
-**Desc Length:**The number or words in an items description 
+**Desc Length:** The number or words in an items description 
 
-**Cleaned Terms in Title:**The number of words in an items title after it has been cleaned of impurities
+**Cleaned Terms in Title:** The number of words in an items title after it has been cleaned of impurities
 
-**Cleaned Terms in Desc:**The number or words in an items description after it has been cleaned of impurities
+**Cleaned Terms in Desc:** The number or words in an items description after it has been cleaned of impurities
 
-**Stemmed Terms in Title:**The number of unique words in an items title after the words have been cleaned then truncated to the words root
+**Stemmed Terms in Title:** The number of unique words in an items title after the words have been cleaned then truncated to the words root
 
-**Stemmed Terms in Desc:**The number of unique words in an items description after the words have been cleaned then truncated to the words root
+**Stemmed Terms in Desc:** The number of unique words in an items description after the words have been cleaned then truncated to the words root
 
-**Neighbors in Title:**The number of words in an items title which is similar in meaning(determined by Glove embedding) to a word in the search query
+**Neighbors in Title:** The number of words in an items title which is similar in meaning(determined by Glove embedding) to a word in the search query
 
-**Neighbors in Desc:**The number of words in an items description which is similar in meaning(determined by Glove embedding) to a word in the search query
+**Neighbors in Desc:** The number of words in an items description which is similar in meaning(determined by Glove embedding) to a word in the search query
 
 **Search Title Entropy** The kl-divergens of the distribution of letters in the search term and an items title
 
