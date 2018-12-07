@@ -6,9 +6,13 @@
 
 ### In 2015 Home Depot hosted a Kaggle competition to model how relevent items are to a given search term. 
 
-### Our task is to take search queries, averaging three words in length, and predict which items are the most relevant using a relevancy score from 1.0 to 3.0 (with 3.0 indicating a higher relevancy to the search terms). We measured our model success in the same fashion as the competition with RMSE (Root Mean Squared Error).
+### Our task is to take search queries, averaging three words in length, and predict which items are the most relevant using a relevancy score from 1.0 to 3.0 (with 3.0 indicating a higher relevancy to the search terms). We measured our model success in the same fashion as the competition with RMSE (Root Mean Squared Error). 
 
 <img src="./Images/logo.jpg" alt="Home Depot Logo" width="200"/>
+
+[Here is the notebook where all of the magic happens.](https://github.com/robertisandor/USF-MSDS621-KaggleHomeDepot/blob/master/Final%20Project%20Presentation%20Notebook.ipynb) 
+
+Feel free to read everything below to understand our methodology and insights derived from going through this project.
 
 **The data we were provided had the following columns:**
 
