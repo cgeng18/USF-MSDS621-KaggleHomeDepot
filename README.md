@@ -129,7 +129,7 @@ So if you were to search with our algorithm the top ten results would be on aver
 
 ## Top Performance
 
-Our best RMSE score of .46453 (on the testing data) resulted from a Random Forest model with 135 trees where 4-5 features were considered at every split. Rerunning the model with different subsamples produced similar results. If we were to submit this result and get a similar RMSE score, it would be enough to place us within the top 10% of Kaggle competitors and earn a bronze model.
+Our best RMSE score of .4683 (on the testing data) resulted from a Random Forest model with 135 trees where 4-5 features were considered at every split. Rerunning the model with different subsamples produced similar results. If we were to submit this result and get a similar RMSE score, it would be enough to place us within the top 15% of Kaggle competitors.
 
 ## Insights
 
