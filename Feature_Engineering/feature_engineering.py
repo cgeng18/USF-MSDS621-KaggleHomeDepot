@@ -238,7 +238,7 @@ def lemmatized(words):
                         for w in words]
     return lemmatized_words
 
-def attrib_stack(attributes):
+def attrib_stack(attributes, filepath_to_save_to):
     """
     Aggregate all the features of a product into a single description
     and return a dataframe with product id and description that is tokenized.
@@ -253,8 +253,8 @@ def attrib_stack(attributes):
         lambda x: tokenizer(x))
     attrib_per_product['value'] = attrib_per_product['value'].apply(
         lambda x: ','.join(x))
-    attrib_per_product.to_csv('attrib_per_product.csv')
-    attrib_per_product = pd.read_csv('attrib_per_product.csv')
+    attrib_per_product.to_csv(filepath_to_save_to)
+    attrib_per_product = pd.read_csv(filepath_to_save_to)
     attrib_per_product = attrib_per_product.drop('Unnamed: 0', axis=1)
     return attrib_per_product
 
@@ -320,12 +320,12 @@ def color_df(attributes, train):
     return train
 
 
-def search_title_lev_dist(train):
+def search_title_lev_dist(train, filepath_to_save_to):
     """
     Calculate Levenshtein distance between search term and the product title
     """
-    train.to_csv('train_with_search_in_attrib.csv')
-    train = pd.read_csv('train_with_search_in_attrib.csv')
+    train.to_csv(filepath_to_save_to)
+    train = pd.read_csv(filepath_to_save_to)
     train = train.drop(['Unnamed: 0'], axis=1)
     train['product_title_clean'] = train['product_title'].apply(
         lambda x: list(set(tokenize(x))))
@@ -849,7 +849,7 @@ def add_num_attrib_per_prod_column(train_df, attributes_df):
 
     return train_df
 
-def getAllNumericalCols(all_features):
+def get_all_numerical_cols(all_features):
     """
     param: all_features is a data frame containning all features.
     output: column names of all numerical features.
@@ -861,7 +861,7 @@ def getAllNumericalCols(all_features):
     return all_num_col
 
 
-def getSimilarityCols(all_num_features):
+def get_similarity_cols(all_num_features):
     """
     param: all_features is a data frame containning all numerical features.
     output: column names of all similarity features.
@@ -871,7 +871,7 @@ def getSimilarityCols(all_num_features):
     return all_similarity_features
 
 
-def getCountAndOtherCols(all_similarity_features, all_num_features):
+def get_count_and_other_cols(all_similarity_features, all_num_features):
     """
     return the column names of all count features and len_Entropy columns.
     """
@@ -882,14 +882,14 @@ def getCountAndOtherCols(all_similarity_features, all_num_features):
 
     return col_has_in, len_H_features
 
-def createCleanedTermsCol(train_df):
+def create_cleaned_terms_col(train_df):
     search_terms = train_df['search_term']
     cleaned_terms = [' '.join(tokenize(search_term))
                      for search_term in search_terms]
     train_df['cleaned_terms'] = cleaned_terms
     return train_df
 
-def createStemmedCols(train_df):
+def create_stemmed_cols(train_df):
     # stem the search terms, title, and descriptions
     search_terms = train_df['search_term']
     stemmed_terms = [' '.join(stemmed(tokenize(search_term)))
@@ -904,7 +904,7 @@ def createStemmedCols(train_df):
     train_df['stemmed_desc'] = stemmed_desc
     return train_df
 
-def createLemmatizedCols(train_df):
+def create_lemmatized_cols(train_df):
     search_terms = train_df['search_term']
     # lemmatize the search terms, title, and descriptions
     lemmatized_terms = [' '.join(lemmatized(tokenize(search_term)))
@@ -919,58 +919,58 @@ def createLemmatizedCols(train_df):
     train_df['lemmatized_desc'] = lemmatized_desc
     return train_df
 
-def createLengthCols(train_df):
+def create_length_cols(train_df):
     train_df['clean_length'] = get_length(list(train_df['cleaned_terms']))
     train_df['title_length'] = get_length(list(train_df['product_title']))
     train_df['desc_length'] = get_length(list(train_df['product_description']))
     return train_df
 
-def findCleanedTermsInCorpusCols(train_df):
+def find_cleaned_terms_in_corpus_cols(train_df):
     train_df['clean_terms_in_title'] = clean_term_in_doc(list(train_df['cleaned_terms']), 
                                                          list(train_df['product_title']))
     train_df['clean_terms_in_desc'] = clean_term_in_doc(list(train_df['cleaned_terms']), 
                                                         list(train_df['product_description']))
     return train_df
 
-def findStemmedTermsInCorpusCols(train_df):
+def find_stemmed_terms_in_corpus_cols(train_df):
     train_df['stemmed_terms_in_title'] = clean_term_in_doc(
         list(train_df['stemmed_terms']), list(train_df['stemmed_title']))
     train_df['stemmed_terms_in_desc'] = clean_term_in_doc(
         list(train_df['stemmed_terms']), list(train_df['stemmed_desc']))
     return train_df
 
-def findLemmatizedTermsInCorpusCols(train_df):
+def find_lemmatized_terms_in_corpus_cols(train_df):
     train_df['lemmatized_terms_in_title'] = clean_term_in_doc(
         list(train_df['lemmatized_terms']), list(train_df['lemmatized_title']))
     train_df['lemmatized_terms_in_desc'] = clean_term_in_doc(
         list(train_df['lemmatized_terms']), list(train_df['lemmatized_desc']))
     return train_df
 
-def createJaccardIndexCols(train_df):
+def create_jaccard_index_cols(train_df):
     train_df['jaccard_index_title'] = calculate_jaccard_index(list(train_df['product_title']), 
                                                               list(train_df['cleaned_terms']))
     train_df['jaccard_index_desc'] = calculate_jaccard_index(list(train_df['product_description']), 
                                                              list(train_df['cleaned_terms']))
     return train_df
 
-def createEntropyCols(train_df):
+def create_entropy_cols(train_df):
     train_df['search_terms_entropy'] = calculate_entropy(letter_prob(list(train_df['cleaned_terms'])))
     train_df['title_entropy'] = calculate_entropy(letter_prob(list(train_df['product_title'])))
     return train_df
 
-def createLCSCols(train_df):
+def create_LCS_cols(train_df):
     train_df['lcs_title'] = longest_common_subsequence(list(train_df['cleaned_terms']), 
                                                        list(train_df['product_title']))
     train_df['lcs_desc'] = longest_common_subsequence(list(train_df['cleaned_terms']), 
                                                       list(train_df['product_description']))
     return train_df
 
-def findNeighborsInCorpus(train_df, dictionary, glove_file):
+def find_neighbors_in_corpus(train_df, dictionary, glove_file):
     wordlist, matrix = split_dictionary(glove_file)
     cleaned_set = unique_words(train_df)
-    find_nearest_neighbors('glove_neighbour_no_w.txt',
+    find_nearest_neighbors('Data/glove_neighbour_no_w.txt',
                            cleaned_set, matrix, wordlist, dictionary)
-    k_dict = build_dictionary('glove_neighbour_no_w.txt')
+    k_dict = build_dictionary('Data/glove_neighbour_no_w.txt')
     terms_neighbour = get_all_terms_neighbors(k_dict, list(train_df['cleaned_terms']))
     train_df['terms_neighbour'] = terms_neighbour
     train_df['neighbours_in_title'] = clean_term_in_doc(terms_neighbour, list(train_df['product_title']))
