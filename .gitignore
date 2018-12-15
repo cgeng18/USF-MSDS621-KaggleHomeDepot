@@ -3,5 +3,6 @@ __pycache__*
 *.txt
 *.csv
 ./EDA/.ipynb_checkpoints/*
+./Feature_Engineering/.ipynb*
 ./Feature_Engineering/.ipynb_checkpoints/*
 .ipynb_checkpoints/*
