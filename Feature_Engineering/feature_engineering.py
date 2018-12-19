@@ -1,5 +1,6 @@
 from collections import defaultdict, Counter
 from Levenshtein import distance
+import lzma
 import math
 from math import sqrt
 from matplotlib import pyplot as plt
@@ -18,6 +19,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.pipeline import Pipeline
 import string
@@ -1078,3 +1080,33 @@ def feature_engineering(train_df, products_df, dictionary):
     train_df['lcs_desc'] = longest_common_subsequence(cleaned, desc)
 
     return train_df
+
+def grid_search_models_rmse(models, model_params, train_data, train_target):
+    """
+    :param models:          a list of pipelines of models
+    :param model_params:    a list of dictionaries with the model parameters
+    """
+    best_models = []
+    for model in zip(models, model_params):
+        gs = GridSearchCV(estimator=model[0],
+                          param_grid=model[1],
+                          scoring='neg_mean_squared_error',
+                          cv=5)
+        if type(train_target) != np.ndarray:
+            y = train_target.values.ravel()
+            train_target = np.array(y).astype(float)
+        gs.fit(train_data, train_target)
+        best_models.append(
+            (sqrt(-1 * gs.best_score_), gs.best_params_, model[0]))
+    return best_models
+
+def fit_best_model(best_model, train_data, train_target, test_data):
+    best_model = best_model[2].steps[-1][1].__class__(**best_model[1])
+    best_model.fit(train_data, train_target)
+    return best_model.predict(test_data)
+
+def change_best_params_keys(best_models, old_names, new_names):
+    best_model = sorted(best_models, key=lambda model: model[0])[0]
+    for idx in range(len(old_names)):
+        best_model[1][new_names[idx]] = best_model[1].pop(old_names[idx])
+    return (best_model[0], best_model[1], best_model[2])
