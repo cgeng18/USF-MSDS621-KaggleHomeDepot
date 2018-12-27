@@ -1,5 +1,6 @@
 from sklearn.base import BaseEstimator, clone, RegressorMixin, TransformerMixin
 from sklearn.model_selection import KFold
+from Feature_Engineering.feature_engineering import *
 
 
 class StackedRegressor(BaseEstimator, RegressorMixin):
