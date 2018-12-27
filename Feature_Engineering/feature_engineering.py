@@ -1,9 +1,11 @@
 from collections import defaultdict, Counter
+from itertools import repeat
 from Levenshtein import distance
 import lzma
 import math
 from math import sqrt
 from matplotlib import pyplot as plt
+from multiprocessing import *
 import numpy as np
 import nltk
 from nltk.stem.porter import *
@@ -21,7 +23,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 import string
 import sys
 import time
@@ -104,7 +106,7 @@ def split_dictionary(glove_file):
     return wordlist, matrix
 
 
-def unique_words(train_df):
+def unique_words(cleaned_terms):
     """
     I then obtain the unique words that appear in the search_term.
 
@@ -112,7 +114,7 @@ def unique_words(train_df):
     :returns:               a list of unique words from search terms
                             that have been stripped of numbers, symbols, etc.
     """
-    cleaned = list(train_df['cleaned_terms'])
+    cleaned = list(cleaned_terms)
     all_words = []
     for t in cleaned:
         all_words += t.split(' ')
@@ -202,13 +204,15 @@ def clean_term_in_doc(terms, title):
                             cleaned terms within a product's title
     """
     count = np.zeros(len(terms))
+    terms = list(terms)
+    title = list(title)
     for i in range(len(terms)):
         if not pd.isnull(terms[i]):
             title[i] = title[i].lower()
             for term in terms[i].split(' '):
                 if term in title[i].split(' '):
                     count[i] += 1
-    return count
+    return pd.DataFrame(count)
 
 
 def get_length(column):
@@ -251,14 +255,21 @@ def attrib_stack(attributes, filepath_to_save_to):
     attrib_per_product = attrib_per_product.reset_index()
     attrib_per_product['value'] = attrib_per_product['value'].apply(
         lambda x: ','.join(x))
-    attrib_per_product['value'] = attrib_per_product['value'].apply(
-        lambda x: tokenizer(x))
-    attrib_per_product['value'] = attrib_per_product['value'].apply(
-        lambda x: ','.join(x))
+
+    value_col = [(value,) for value in attrib_per_product['value']]
+    pool = Pool()
+    attrib_per_product['value'] = pool.starmap(attrib_stack_parallelized, value_col)
+    pool.close()
+    
     attrib_per_product.to_csv(filepath_to_save_to)
     attrib_per_product = pd.read_csv(filepath_to_save_to)
     attrib_per_product = attrib_per_product.drop('Unnamed: 0', axis=1)
     return attrib_per_product
+
+def attrib_stack_parallelized(value_col):
+    value_col = tokenizer(value_col)
+    value_col = ','.join(value_col)
+    return value_col
 
 
 def join_attrib(train, attrib_per_product):
@@ -312,15 +323,17 @@ def color_df(attributes, train):
     train['color'].fillna('', inplace=True)
     train['search_term'].fillna('', inplace=True)
     train['color'] = train['color'].apply(lambda x: set(x.split(',')))
-
-    color_in_search_term = []
-    for i in range(len(train)):
-        p = len(train['color'][i].intersection(train['search_term_split'][i]))
-        color_in_search_term.append(p)
+        
+    pool = Pool()
+    color_in_search_term = pool.starmap(find_color_in_search_term_parallelized, zip(list(train['color']),
+                                                                                    list(train['search_term_split'])))
+    pool.close()
     train['color_in_search_term'] = color_in_search_term
 
     return train
 
+def find_color_in_search_term_parallelized(color_column, search_term_split_col):
+    return len(color_column.intersection(search_term_split_col))
 
 def search_title_lev_dist(train, filepath_to_save_to):
     """
@@ -493,7 +506,22 @@ def longest_common_subsequence(X, Y):
 
     return lcs
 
+def longest_common_subsequence_parallelized(X, Y):
+    m = len(X)
+    n = len(Y)
 
+    L = [[None]*(n+1) for i in range(m+1)]
+
+    for i in range(m+1):
+        for j in range(n+1):
+            if i == 0 or j == 0:
+                L[i][j] = 0
+            elif X[i-1] == Y[j-1]:
+                L[i][j] = L[i-1][j-1]+1
+            else:
+                L[i][j] = max(L[i-1][j], L[i][j-1])
+    return L[m][n]
+    
 def calculate_jaccard_index(text_1, text_2):
     """
     :param text_1:         a list of strings of text
@@ -502,6 +530,8 @@ def calculate_jaccard_index(text_1, text_2):
                            between the strings of text provided
     """
     jaccard_indices = []
+    text_1 = list(text_1)
+    text_2 = list(text_2)
     for text in zip(text_1, text_2):
         tokens_1 = set(tokenize(text[0]))
         tokens_2 = set(tokenize(text[1]))
@@ -509,7 +539,7 @@ def calculate_jaccard_index(text_1, text_2):
         union_ = tokens_1.union(tokens_2)
         jaccard_indices.append(
             len(list(intersection_)) / float(len(list(union_))))
-    return jaccard_indices
+    return pd.DataFrame(jaccard_indices)
 
 def jaro(s, t):
     """
@@ -667,6 +697,9 @@ def createSWscoreCol(df, query_col_name, long_text_col_name, new_col_name):
     df[new_col_name] = score_ls
     return df
 
+def create_SW_score_col_parallelized(query_col_name, long_text_col_name):
+    return getSWscore(query_col_name, long_text_col_name)
+    
 
 def computeNCD(string1, string2):
     """
@@ -705,6 +738,10 @@ def createNCDCol(df, search_name, long_text_name, new_col_name):
                                      for a in str1.split() for b in str2.split()]))
     df[new_col_name] = NCD_score_ls
     return df
+
+def compute_ncd_parallelized(str1, str2):
+    return np.mean([computeNCD(a, b)
+                    for a in str1.split() for b in str2.split()])
 
 def gettext(xmltext):
     """
@@ -815,18 +852,22 @@ def find_n_tfidf_highest_scores(train_set, n):
 
     p = []
     total_description = list(train_set['total_description'])
-    for i in range(len(train_set)):
-        response = tfidf.transform([total_description[i]])
-        feature_names = tfidf.get_feature_names()
-        col = response.nonzero()[1]
-        t = []
-        t = [(feature_names[col], response[0, col])
-             for col in response.nonzero()[1] if response[0, col] >= 0.09]
-        t.sort(key=lambda x: x[1], reverse=True)
-        p.append(t[0:n])
+    
+    pool = Pool()
+    p = pool.starmap(find_n_tfidf_highest_scores_parallelized, zip(total_description, repeat(tfidf), repeat(5)))
+    pool.close()
 
     train_set['tfidf'] = p
     return train_set
+
+def find_n_tfidf_highest_scores_parallelized(total_description, tfidf, n):
+    response = tfidf.transform([total_description])
+    feature_names = tfidf.get_feature_names()
+    col = response.nonzero()[1]
+    t = [(feature_names[col], response[0, col])
+         for col in response.nonzero()[1] if response[0, col] >= 0.09]
+    t.sort(key=lambda x: x[1], reverse=True)
+    return t[0:n]
 
 def add_word_count_features(train_df):
     train_df['num_words_in_description'] = train_df['total_description'].apply(
@@ -978,108 +1019,6 @@ def find_neighbors_in_corpus(train_df, dictionary, glove_file):
     train_df['neighbours_in_title'] = clean_term_in_doc(terms_neighbour, list(train_df['product_title']))
     train_df['neighbours_in_desc'] = clean_term_in_doc(terms_neighbour, list(train_df['product_description']))
     return train_df 
-
-def feature_engineering(train_df, products_df, dictionary):
-    """
-    Adds the following features to the training set dataframe: 
-    * clean_length: the count of words in the 'cleaned' search terms
-    * title_length: the count of words in the 'cleaned' title
-    * desc_length: the count of words in the 'cleaned' description
-    * clean_terms_in_title: the number of time 
-    any of the words in clean_terms appears in the title
-    * clean_terms_in_desc: the number of time 
-    any of the words in clean_terms appears in the description
-    * neighbours_in_title: the count of the appearance of the 
-    words closest to the search terms in the title
-    * neighbours_in_desc: the count of the appearance of the 
-    words closest to the search terms in the description
-
-    :param train_df:        the training set Pandas dataframe
-    :param products_df:     the product descriptions dataframe
-    :param dictionary:      the glove dictionary
-    :returns:               the modified dataframe with the additional features
-    """
-    # join the dataframes together
-    train_df = train_df.set_index('product_uid').join(
-        products_df.set_index('product_uid'))
-    train_df = train_df.reset_index()
-
-    # "clean" the search terms of numbers and stop words
-    search_terms = train_df['search_term']
-    cleaned_terms = [' '.join(tokenize(search_term))
-                     for search_term in search_terms]
-    train_df['cleaned_terms'] = cleaned_terms
-
-    cleaned = list(train_df['cleaned_terms'])
-    title = list(train_df['product_title'])
-    desc = list(train_df['product_description'])
-
-    # stem the search terms, title, and descriptions
-    stemmed_terms = [' '.join(stemmed(tokenize(search_term)))
-                     for search_term in search_terms]
-    stemmed_title = [' '.join(stemmed(tokenize(t)))
-                     for t in train_df['product_title']]
-    stemmed_desc = [' '.join(stemmed(tokenize(d)))
-                    for d in train_df['product_description']]
-
-    train_df['stemmed_terms'] = stemmed_terms
-    train_df['stemmed_title'] = stemmed_title
-    train_df['stemmed_desc'] = stemmed_desc
-
-    stemmed_terms = list(train_df['stemmed_terms'])
-    stemmed_title = list(train_df['stemmed_title'])
-    stemmed_desc = list(train_df['stemmed_desc'])
-
-    # lemmatize the search terms, title, and descriptions
-    lemmatized_terms = [' '.join(lemmatized(tokenize(search_term)))
-                        for search_term in search_terms]
-    lemmatized_title = [' '.join(lemmatized(tokenize(t)))
-                        for t in train_df['product_title']]
-    lemmatized_desc = [' '.join(lemmatized(tokenize(d)))
-                       for d in train_df['product_description']]
-
-    train_df['lemmatized_terms'] = lemmatized_terms
-    train_df['lemmatized_title'] = lemmatized_title
-    train_df['lemmatized_desc'] = lemmatized_desc
-
-    lemmatized_terms = list(train_df['lemmatized_terms'])
-    lemmatized_title = list(train_df['lemmatized_title'])
-    lemmatized_desc = list(train_df['lemmatized_desc'])
-
-    # set up the calculations for finding the nearest neighbors
-    wordlist, matrix = split_dictionary()
-    cleaned_set = unique_words(train_df)
-    find_nearest_neighbors('glove_neighbour_no_w.txt',
-                           cleaned_set, matrix, wordlist, dictionary)
-    k_dict = build_dictionary('glove_neighbour_no_w.txt')
-    terms_neighbour = get_all_terms_neighbors(k_dict, cleaned)
-    train_df['terms_neighbour'] = terms_neighbour
-
-    # create the features to be used in the model
-    train_df['clean_length'] = get_length(cleaned)
-    train_df['title_length'] = get_length(title)
-    train_df['desc_length'] = get_length(desc)
-    train_df['clean_terms_in_title'] = clean_term_in_doc(cleaned, title)
-    train_df['clean_terms_in_desc'] = clean_term_in_doc(cleaned, desc)
-    train_df['stemmed_terms_in_title'] = clean_term_in_doc(
-        stemmed_terms, stemmed_title)
-    train_df['stemmed_terms_in_desc'] = clean_term_in_doc(
-        stemmed_terms, stemmed_desc)
-    train_df['lemmatized_terms_in_title'] = clean_term_in_doc(
-        lemmatized_terms, lemmatized_title)
-    train_df['lemmatized_terms_in_desc'] = clean_term_in_doc(
-        lemmatized_terms, lemmatized_desc)
-    train_df['neighbours_in_title'] = clean_term_in_doc(terms_neighbour, title)
-    train_df['neighbours_in_desc'] = clean_term_in_doc(terms_neighbour, desc)
-
-    train_df['search_terms_entropy'] = calculate_entropy(letter_prob(cleaned))
-    train_df['title_entropy'] = calculate_entropy(letter_prob(title))
-    train_df['jaccard_index_title'] = calculate_jaccard_index(title, cleaned)
-    train_df['jaccard_index_desc'] = calculate_jaccard_index(desc, cleaned)
-    train_df['lcs_title'] = longest_common_subsequence(cleaned, title)
-    train_df['lcs_desc'] = longest_common_subsequence(cleaned, desc)
-
-    return train_df
 
 def grid_search_models_rmse(models, model_params, train_data, train_target):
     """
