@@ -898,7 +898,7 @@ def get_all_numerical_cols(all_features):
     output: column names of all numerical features.
     """
     col_names = all_features.columns.tolist()
-    all_num_ind = [15]+list(range(25, len(col_names)))
+    all_num_ind = [10, 12]+list(range(22, len(col_names)))
     all_num_col = [col_names[i] for i in all_num_ind]
 
     return all_num_col
@@ -910,7 +910,7 @@ def get_similarity_cols(all_num_features):
     output: column names of all similarity features.
     """
     all_similarity_features = [all_num_features.columns.tolist(
-    )[i] for i in [7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 19]]
+    )[i] for i in [0, 1, 11, 12, 15, 16, 17, 18, 19, 20, 21, 22, 23]]
     return all_similarity_features
 
 
